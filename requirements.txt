@@ -1,17 +1,4 @@
-# Music Downloader Pro - Required Dependencies
-# Install with: pip install -r requirements.txt
-
-# Core download library
 yt-dlp>=2024.3.10
-
-# Image processing for logo
 Pillow>=10.0.0
-
-# HTTP requests (used by yt-dlp)
 requests>=2.28.0
-
-# Optional: For better performance
-# mutagen>=1.46.0
-
-# Note: FFmpeg must be installed separately (system-level)
-# See run.txt for FFmpeg installation instructions
+mutagen>=1.46.0
