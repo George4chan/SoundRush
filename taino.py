@@ -1,7 +1,13 @@
 """
-🎵 Music & Video Downloader - Complete Working Version
-Python: 3.8, 3.9, 3.10, 3.11, 3.12
-Supports: MP3, M4A, WAV, FLAC, OPUS, MP4
+MUSIC & VIDEO DOWNLOADER - ALL IN ONE
+Save this file. Run it. It works.
+
+Requirements:
+- Python 3.8+
+- FFmpeg installed
+
+Install: pip install yt-dlp streamlit
+Run: streamlit run music_downloader.py
 """
 
 import streamlit as st
@@ -10,342 +16,163 @@ import yt_dlp
 import tempfile
 from datetime import timedelta
 
-# Page config
-st.set_page_config(
-    page_title="🎵 Music Downloader",
-    page_icon="🎵",
-    layout="centered"
-)
+# Check and install yt-dlp if needed
+try:
+    import yt_dlp
+except ImportError:
+    import subprocess
+    import sys
+    subprocess.check_call([sys.executable, "-m", "pip", "install", "yt-dlp"])
+    import yt_dlp
 
-# Custom CSS
+st.set_page_config(page_title="Music Downloader", page_icon="🎵", layout="centered")
+
+# CSS
 st.markdown("""
 <style>
-    @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
-    
-    .stApp {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    }
-    
-    h1 {
-        font-family: 'Poppins', sans-serif !important;
-        font-size: 3rem !important;
-        font-weight: 700 !important;
-        background: linear-gradient(135deg, #FFD700, #FFA500);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-        text-align: center;
-    }
-    
-    .logo-container {
-        text-align: center;
-        margin: 20px 0;
-        animation: float 3s ease-in-out infinite;
-    }
-    
-    @keyframes float {
-        0% { transform: translateY(0px); }
-        50% { transform: translateY(-10px); }
-        100% { transform: translateY(0px); }
-    }
-    
-    .stButton > button {
-        background: linear-gradient(135deg, #FF6B6B, #FF8E53) !important;
-        color: white !important;
-        font-size: 1.2rem !important;
-        font-weight: 700 !important;
-        padding: 1rem 2rem !important;
-        border-radius: 50px !important;
-        border: none !important;
-        box-shadow: 0 10px 30px rgba(255, 107, 107, 0.4) !important;
-        transition: all 0.3s ease !important;
-    }
-    
-    .stButton > button:hover {
-        transform: translateY(-5px) !important;
-        box-shadow: 0 15px 40px rgba(255, 107, 107, 0.6) !important;
-    }
-    
-    .stTextInput > div > div > input {
-        background: rgba(255, 255, 255, 0.9) !important;
-        border: 2px solid #FFD700 !important;
-        border-radius: 25px !important;
-        padding: 12px 20px !important;
-        font-size: 1rem !important;
-    }
-    
-    .stProgress > div > div > div {
-        background: linear-gradient(90deg, #FFD700, #FFA500, #FF6B6B) !important;
-        border-radius: 10px !important;
-    }
-    
-    .info-card {
-        background: rgba(255, 255, 255, 0.1);
-        backdrop-filter: blur(10px);
-        border-radius: 20px;
-        padding: 20px;
-        margin: 10px 0;
-        border: 1px solid rgba(255, 255, 255, 0.2);
-        color: white;
-    }
-    
-    .stDownloadButton > button {
-        background: linear-gradient(135deg, #4CAF50, #45a049) !important;
-        color: white !important;
-        border-radius: 30px !important;
-        padding: 1rem 2rem !important;
-        font-weight: 700 !important;
-        font-size: 1.1rem !important;
-        border: 3px solid white !important;
-        box-shadow: 0 8px 25px rgba(76, 175, 80, 0.4) !important;
-        animation: pulse 2s infinite !important;
-    }
-    
-    @keyframes pulse {
-        0% { box-shadow: 0 8px 25px rgba(76, 175, 80, 0.4); }
-        50% { box-shadow: 0 8px 40px rgba(76, 175, 80, 0.8); }
-        100% { box-shadow: 0 8px 25px rgba(76, 175, 80, 0.4); }
-    }
-    
-    .stDownloadButton > button:hover {
-        transform: translateY(-3px) !important;
-        box-shadow: 0 12px 35px rgba(76, 175, 80, 0.6) !important;
-    }
-    
-    .footer {
-        text-align: center;
-        color: white;
-        opacity: 0.7;
-        margin-top: 2rem;
-    }
-    
-    .stTabs [data-baseweb="tab"] {
-        color: white !important;
-        font-size: 1.1rem !important;
-    }
-    
-    .stTabs [aria-selected="true"] {
-        background: linear-gradient(135deg, #FF6B6B, #FF8E53) !important;
-        border-radius: 10px !important;
-    }
-    
-    .success-box {
-        background: rgba(76, 175, 80, 0.2);
-        border: 2px solid #4CAF50;
-        border-radius: 15px;
-        padding: 20px;
-        text-align: center;
-        color: white;
-    }
+.stApp { background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%); }
+h1 { color: #e94560; text-align: center; font-size: 3rem; }
+.stButton>button {
+    background: linear-gradient(135deg, #e94560, #c23152);
+    color: white; border: none; border-radius: 25px;
+    padding: 15px 30px; font-size: 1.2rem; font-weight: bold;
+    width: 100%; cursor: pointer;
+}
+.stButton>button:hover { background: linear-gradient(135deg, #c23152, #e94560); transform: scale(1.02); }
+.stDownloadButton>button {
+    background: linear-gradient(135deg, #00b894, #00a381);
+    color: white; border: 2px solid white; border-radius: 25px;
+    padding: 15px 30px; font-size: 1.1rem; font-weight: bold;
+    width: 100%; animation: glow 2s infinite;
+}
+@keyframes glow {
+    0% { box-shadow: 0 0 10px #00b894; }
+    50% { box-shadow: 0 0 30px #00b894; }
+    100% { box-shadow: 0 0 10px #00b894; }
+}
+.stTextInput>div>div>input {
+    background: rgba(255,255,255,0.1); border: 2px solid #e94560;
+    border-radius: 25px; padding: 15px; color: white; font-size: 1.1rem;
+}
+.stSelectbox>div>div { background: rgba(255,255,255,0.1); border-radius: 10px; color: white; }
+.stProgress>div>div>div { background: linear-gradient(90deg, #e94560, #00b894); }
+div[data-testid="stTabs"] button { color: white !important; font-size: 1.2rem !important; }
+div[data-testid="stTabs"] button[aria-selected="true"] { background: #e94560 !important; }
 </style>
 """, unsafe_allow_html=True)
 
-# Logo
-st.markdown("""
-<div class="logo-container">
-    <div style="font-size: 4rem; text-align: center;">🎵🎀🎵</div>
-</div>
-""", unsafe_allow_html=True)
+st.markdown("<div style='text-align:center;font-size:5rem;'>🎵</div>", unsafe_allow_html=True)
+st.markdown("<h1>Music & Video Downloader</h1>", unsafe_allow_html=True)
+st.markdown("<p style='text-align:center;color:#aaa;'>Paste URL → Download → Save to Computer</p>", unsafe_allow_html=True)
 
-# Title
-st.markdown("<h1>🎵 Music & Video Downloader 🎵</h1>", unsafe_allow_html=True)
-st.markdown('<p style="text-align: center; color: white; font-size: 1.1rem;">Download Audio & Video with Love 💖</p>', unsafe_allow_html=True)
+tab1, tab2 = st.tabs(["🎵 Audio", "🎬 Video MP4"])
 
-# Tabs
-tab1, tab2 = st.tabs(["🎵 Audio", "🎬 Video (MP4)"])
-
-# ==================== AUDIO TAB ====================
 with tab1:
-    col1, col2 = st.columns(2)
-    with col1:
-        audio_quality = st.selectbox("🔊 Quality", ["128", "192", "256", "320"], index=1, key="q")
-    with col2:
-        audio_format = st.selectbox("🎧 Format", ["mp3", "m4a", "wav", "flac", "opus"], key="f")
+    c1, c2 = st.columns(2)
+    with c1:
+        q = st.selectbox("Quality", ["128", "192", "256", "320"], key="aq")
+    with c2:
+        f = st.selectbox("Format", ["mp3", "m4a", "wav", "flac", "opus"], key="af")
     
-    audio_url = st.text_input("🔗 Enter URL", placeholder="https://www.youtube.com/watch?v=...", key="au")
+    url = st.text_input("YouTube URL", placeholder="https://youtube.com/watch?v=...", key="au")
     
-    if st.button("🎵 Download Audio 🎵", use_container_width=True, key="abtn"):
-        if not audio_url:
-            st.warning("⚠️ Please enter a URL")
-        else:
+    if st.button("Download Audio", key="ab"):
+        if url:
             try:
                 with tempfile.TemporaryDirectory() as tmp:
-                    progress = st.progress(0)
-                    status = st.empty()
+                    bar = st.progress(0)
+                    txt = st.empty()
                     
                     def hook(d):
-                        if d['status'] == 'downloading':
-                            if d.get('total_bytes'):
-                                pct = d['downloaded_bytes'] / d['total_bytes']
-                                progress.progress(min(pct, 1.0))
-                                status.text(f"Downloading... {pct*100:.0f}%")
+                        if d['status'] == 'downloading' and d.get('total_bytes'):
+                            p = d['downloaded_bytes']/d['total_bytes']
+                            bar.progress(min(p, 1.0))
+                            txt.text(f"Downloading... {p*100:.0f}%")
                         elif d['status'] == 'finished':
-                            progress.progress(1.0)
-                            status.text("Processing audio...")
+                            bar.progress(1.0)
+                            txt.text("Processing...")
                     
-                    ydl_opts = {
+                    opts = {
                         'format': 'bestaudio/best',
-                        'postprocessors': [{
-                            'key': 'FFmpegExtractAudio',
-                            'preferredcodec': audio_format,
-                            'preferredquality': audio_quality,
-                        }],
+                        'postprocessors': [{'key': 'FFmpegExtractAudio', 'preferredcodec': f, 'preferredquality': q}],
                         'outtmpl': os.path.join(tmp, '%(title)s.%(ext)s'),
-                        'progress_hooks': [hook],
-                        'quiet': True,
+                        'progress_hooks': [hook], 'quiet': True
                     }
                     
-                    with yt_dlp.YoutubeDL(ydl_opts) as ydl:
-                        info = ydl.extract_info(audio_url, download=False)
+                    with yt_dlp.YoutubeDL(opts) as ydl:
+                        info = ydl.extract_info(url, download=False)
                         title = info['title']
-                        duration = info.get('duration', 0)
-                        
-                        st.info(f"🎵 **{title}** | ⏱️ {timedelta(seconds=duration)}")
-                        
-                        ydl.download([audio_url])
+                        st.info(f"🎵 {title} | ⏱️ {timedelta(seconds=info.get('duration',0))}")
+                        ydl.download([url])
                     
-                    files = [f for f in os.listdir(tmp) if f.endswith(audio_format)]
+                    files = [x for x in os.listdir(tmp) if x.endswith(f)]
                     if files:
-                        filepath = os.path.join(tmp, files[0])
-                        size_mb = os.path.getsize(filepath) / (1024*1024)
-                        
-                        with open(filepath, 'rb') as f:
-                            data = f.read()
-                        
+                        fp = os.path.join(tmp, files[0])
+                        with open(fp, 'rb') as file:
+                            data = file.read()
                         st.balloons()
-                        
-                        st.markdown(f"""
-                        <div class="success-box">
-                            <h3>✅ Download Complete!</h3>
-                            <p>📦 Size: {size_mb:.1f} MB | 🎧 {audio_format.upper()} | 🔊 {audio_quality}kbps</p>
-                        </div>
-                        """, unsafe_allow_html=True)
-                        
-                        st.download_button(
-                            label=f"💝 DOWNLOAD: {title[:50]}.{audio_format} 💝",
-                            data=data,
-                            file_name=f"{title}.{audio_format}",
-                            mime=f"audio/{audio_format}",
-                            use_container_width=True,
-                        )
-                        
+                        st.success(f"Done! {os.path.getsize(fp)/1024/1024:.1f}MB")
+                        st.download_button(f"💾 SAVE: {title[:40]}.{f}", data, f"{title}.{f}", f"audio/{f}")
                         st.audio(data)
-                    else:
-                        st.error("No file generated")
             except Exception as e:
-                st.error(f"❌ Error: {e}")
-
-# ==================== VIDEO TAB ====================
-with tab2:
-    col1, col2 = st.columns(2)
-    with col1:
-        video_quality = st.selectbox("📹 Quality", ["Best", "1080p", "720p", "480p", "360p"], key="vq")
-    with col2:
-        st.markdown('<p style="color:white; margin-top:30px;">📼 <b>Format: MP4</b></p>', unsafe_allow_html=True)
-    
-    video_url = st.text_input("🔗 Enter URL", placeholder="https://www.youtube.com/watch?v=...", key="vu")
-    
-    if st.button("🎬 Download Video (MP4) 🎬", use_container_width=True, key="vbtn"):
-        if not video_url:
-            st.warning("⚠️ Please enter a URL")
+                st.error(str(e))
         else:
+            st.warning("Enter a URL")
+
+with tab2:
+    c1, c2 = st.columns(2)
+    with c1:
+        vq = st.selectbox("Quality", ["Best", "1080p", "720p", "480p", "360p"], key="vq")
+    with c2:
+        st.markdown("<p style='color:white;margin-top:30px;'>Format: <b>MP4</b></p>", unsafe_allow_html=True)
+    
+    url2 = st.text_input("YouTube URL", placeholder="https://youtube.com/watch?v=...", key="vu")
+    
+    if st.button("Download Video MP4", key="vb"):
+        if url2:
             try:
                 with tempfile.TemporaryDirectory() as tmp:
-                    progress = st.progress(0)
-                    status = st.empty()
+                    bar = st.progress(0)
+                    txt = st.empty()
                     
                     def hook(d):
-                        if d['status'] == 'downloading':
-                            if d.get('total_bytes'):
-                                pct = d['downloaded_bytes'] / d['total_bytes']
-                                progress.progress(min(pct, 1.0))
-                                status.text(f"Downloading... {pct*100:.0f}%")
+                        if d['status'] == 'downloading' and d.get('total_bytes'):
+                            p = d['downloaded_bytes']/d['total_bytes']
+                            bar.progress(min(p, 1.0))
+                            txt.text(f"Downloading... {p*100:.0f}%")
                         elif d['status'] == 'finished':
-                            progress.progress(1.0)
-                            status.text("Processing video...")
+                            bar.progress(1.0)
+                            txt.text("Processing...")
                     
-                    if video_quality == "Best":
-                        fmt_str = 'bestvideo+bestaudio/best'
+                    if vq == "Best":
+                        fmt = 'bestvideo+bestaudio/best'
                     else:
-                        h = video_quality.replace('p', '')
-                        fmt_str = f'bestvideo[height<={h}]+bestaudio/best[height<={h}]'
+                        h = vq.replace('p','')
+                        fmt = f'bestvideo[height<={h}]+bestaudio/best[height<={h}]'
                     
-                    ydl_opts = {
-                        'format': fmt_str,
-                        'merge_output_format': 'mp4',
+                    opts = {
+                        'format': fmt, 'merge_output_format': 'mp4',
                         'outtmpl': os.path.join(tmp, '%(title)s.%(ext)s'),
-                        'progress_hooks': [hook],
-                        'quiet': True,
+                        'progress_hooks': [hook], 'quiet': True
                     }
                     
-                    with yt_dlp.YoutubeDL(ydl_opts) as ydl:
-                        info = ydl.extract_info(video_url, download=False)
+                    with yt_dlp.YoutubeDL(opts) as ydl:
+                        info = ydl.extract_info(url2, download=False)
                         title = info['title']
-                        duration = info.get('duration', 0)
-                        
-                        st.info(f"🎬 **{title}** | ⏱️ {timedelta(seconds=duration)}")
-                        
-                        ydl.download([video_url])
+                        st.info(f"🎬 {title} | ⏱️ {timedelta(seconds=info.get('duration',0))}")
+                        ydl.download([url2])
                     
-                    files = [f for f in os.listdir(tmp) if f.endswith('.mp4')]
+                    files = [x for x in os.listdir(tmp) if x.endswith('.mp4')]
                     if files:
-                        filepath = os.path.join(tmp, files[0])
-                        size_mb = os.path.getsize(filepath) / (1024*1024)
-                        
-                        with open(filepath, 'rb') as f:
-                            data = f.read()
-                        
+                        fp = os.path.join(tmp, files[0])
+                        with open(fp, 'rb') as file:
+                            data = file.read()
                         st.balloons()
-                        
-                        st.markdown(f"""
-                        <div class="success-box">
-                            <h3>✅ Download Complete!</h3>
-                            <p>📦 Size: {size_mb:.1f} MB | 🎬 MP4 | 📹 {video_quality}</p>
-                        </div>
-                        """, unsafe_allow_html=True)
-                        
-                        st.download_button(
-                            label=f"💝 DOWNLOAD: {title[:50]}.mp4 💝",
-                            data=data,
-                            file_name=f"{title}.mp4",
-                            mime="video/mp4",
-                            use_container_width=True,
-                        )
-                        
-                        if size_mb < 50:
+                        st.success(f"Done! {os.path.getsize(fp)/1024/1024:.1f}MB")
+                        st.download_button(f"💾 SAVE: {title[:40]}.mp4", data, f"{title}.mp4", "video/mp4")
+                        if os.path.getsize(fp)/1024/1024 < 50:
                             st.video(data)
-                        else:
-                            st.info("📹 File too large for preview. Click download button above.")
-                    else:
-                        st.error("No video file generated")
             except Exception as e:
-                st.error(f"❌ Error: {e}")
-
-# ==================== SIDEBAR ====================
-with st.sidebar:
-    st.markdown("### 🎀 Info")
-    
-    st.markdown("""
-    <div class="info-card">
-        <h4>🎵 Audio</h4>
-        MP3 | M4A | WAV | FLAC | OPUS
-    </div>
-    <div class="info-card">
-        <h4>🎬 Video</h4>
-        MP4 (Up to 1080p)
-    </div>
-    <div class="info-card">
-        <h4>📋 Steps</h4>
-        1. Paste URL<br>
-        2. Click Download<br>
-        3. Click green button to save
-    </div>
-    """, unsafe_allow_html=True)
-
-# Footer
-st.markdown("---")
-st.markdown("""
-<div class="footer">
-    <p>💖 Made with love | Audio & Video Downloader</p>
-    <p>🎵 🎀 🎵</p>
-</div>
-""", unsafe_allow_html=True)
+                st.error(str(e))
+        else:
+            st.warning("Enter a URL")
