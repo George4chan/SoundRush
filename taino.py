@@ -8,7 +8,9 @@ import streamlit as st
 import os
 import yt_dlp
 import tempfile
+import base64
 from datetime import timedelta
+import time
 
 # Page config
 st.set_page_config(
@@ -60,32 +62,11 @@ st.markdown("""
         transition: all 0.3s ease !important;
         text-transform: uppercase !important;
         letter-spacing: 2px !important;
-        position: relative;
-        overflow: hidden;
     }
     
     .stButton > button:hover {
         transform: translateY(-5px) !important;
         box-shadow: 0 15px 40px rgba(255, 107, 107, 0.6) !important;
-    }
-    
-    .stButton > button::before {
-        content: '✨';
-        position: absolute;
-        left: 20px;
-        animation: sparkle 1.5s ease-in-out infinite;
-    }
-    
-    .stButton > button::after {
-        content: '✨';
-        position: absolute;
-        right: 20px;
-        animation: sparkle 1.5s ease-in-out infinite 0.75s;
-    }
-    
-    @keyframes sparkle {
-        0%, 100% { opacity: 0; transform: scale(0); }
-        50% { opacity: 1; transform: scale(1); }
     }
     
     .stTextInput > div > div > input {
@@ -94,11 +75,6 @@ st.markdown("""
         border-radius: 25px !important;
         padding: 15px 20px !important;
         font-size: 1.1rem !important;
-    }
-    
-    .stSelectbox > div > div {
-        background: rgba(255, 255, 255, 0.1) !important;
-        border-radius: 10px !important;
     }
     
     .stProgress > div > div > div {
@@ -119,10 +95,18 @@ st.markdown("""
         background: linear-gradient(135deg, #4CAF50, #45a049) !important;
         color: white !important;
         border-radius: 30px !important;
-        padding: 0.8rem 2rem !important;
-        font-weight: 600 !important;
+        padding: 1rem 2rem !important;
+        font-weight: 700 !important;
+        font-size: 1.2rem !important;
         border: none !important;
         box-shadow: 0 8px 25px rgba(76, 175, 80, 0.4) !important;
+        animation: pulse 2s infinite;
+    }
+    
+    @keyframes pulse {
+        0% { box-shadow: 0 8px 25px rgba(76, 175, 80, 0.4); }
+        50% { box-shadow: 0 8px 40px rgba(76, 175, 80, 0.8); }
+        100% { box-shadow: 0 8px 25px rgba(76, 175, 80, 0.4); }
     }
     
     .stDownloadButton > button:hover {
@@ -139,6 +123,7 @@ st.markdown("""
     
     .stTabs [data-baseweb="tab"] {
         color: white !important;
+        font-size: 1.1rem !important;
     }
     
     .stTabs [aria-selected="true"] {
@@ -154,19 +139,20 @@ st.markdown("""
     <div style="font-size: 5rem; text-align: center;">
         🎵🎀🎵
     </div>
-    <div style="text-align: center; margin-top: -20px;">
-        <span style="font-size: 2rem;">🎧</span>
-        <span style="font-size: 3rem;">🎶</span>
-        <span style="font-size: 2rem;">🎧</span>
-    </div>
 </div>
 """, unsafe_allow_html=True)
 
 # Title
 st.markdown("<h1>🎵 Music & Video Downloader 🎵</h1>", unsafe_allow_html=True)
-st.markdown('<p style="text-align: center; color: white; font-size: 1.2rem;">Download Audio (MP3/M4A/WAV/FLAC/OPUS) & Video (MP4) 💖</p>', unsafe_allow_html=True)
+st.markdown('<p style="text-align: center; color: white; font-size: 1.2rem;">Download Audio & Video (MP4) 💖</p>', unsafe_allow_html=True)
 
-# Tabs for Audio and Video
+# Session state to store downloaded file
+if 'download_file' not in st.session_state:
+    st.session_state.download_file = None
+    st.session_state.download_filename = None
+    st.session_state.download_mime = None
+
+# Tabs
 tab1, tab2 = st.tabs(["🎵 Audio Download", "🎬 Video Download (MP4)"])
 
 with tab1:
@@ -188,33 +174,32 @@ with tab1:
     
     audio_url = st.text_input(
         "Enter URL for Audio",
-        placeholder="🔗 Paste YouTube or music URL here...",
+        placeholder="🔗 https://www.youtube.com/watch?v=...",
         key="audio_url"
     )
     
     if st.button("🎵 Download Audio 🎵", use_container_width=True, key="audio_btn"):
         if not audio_url:
-            st.error("❌ Please enter a URL first! 🥺")
+            st.error("❌ Please enter a URL first!")
         else:
             try:
                 with tempfile.TemporaryDirectory() as temp_dir:
                     progress_bar = st.progress(0)
                     status_text = st.empty()
+                    status_text.text("Starting download...")
                     
                     def progress_hook(d):
                         if d['status'] == 'downloading':
                             try:
-                                if 'total_bytes' in d and d['total_bytes']:
+                                if 'total_bytes' in d and d['total_bytes'] and d['total_bytes'] > 0:
                                     percent = d['downloaded_bytes'] / d['total_bytes']
                                     progress_bar.progress(min(percent, 1.0))
-                                    downloaded = d['downloaded_bytes'] / (1024*1024)
-                                    total = d['total_bytes'] / (1024*1024)
-                                    status_text.text(f"Downloading... {percent*100:.1f}% ({downloaded:.1f}/{total:.1f} MB)")
+                                    status_text.text(f"Downloading... {percent*100:.1f}%")
                             except:
                                 pass
                         elif d['status'] == 'finished':
                             progress_bar.progress(1.0)
-                            status_text.text("Processing audio...")
+                            status_text.text("Processing audio... Please wait")
                     
                     quality_val = audio_quality.replace(" kbps", "")
                     ydl_opts = {
@@ -235,11 +220,8 @@ with tab1:
                         title = info.get('title', 'Unknown')
                         duration = info.get('duration', 0)
                         
-                        col1, col2 = st.columns(2)
-                        with col1:
-                            st.info(f"🎵 **Title:** {title[:80]}")
-                        with col2:
-                            st.info(f"⏱️ **Duration:** {timedelta(seconds=duration)}")
+                        st.info(f"🎵 **Title:** {title}")
+                        st.info(f"⏱️ **Duration:** {timedelta(seconds=duration)}")
                         
                         ydl.download([audio_url])
                         
@@ -249,23 +231,28 @@ with tab1:
                             size_mb = os.path.getsize(file_path) / (1024*1024)
                             
                             with open(file_path, 'rb') as f:
-                                audio_bytes = f.read()
+                                file_data = f.read()
                             
                             st.balloons()
-                            st.success(f"✅ Downloaded: {title}")
-                            st.info(f"📦 Size: {size_mb:.1f} MB | 🎧 Format: {audio_format.upper()} | 🔊 Quality: {audio_quality}")
+                            st.success(f"✅ Downloaded Successfully!")
+                            st.info(f"📦 Size: {size_mb:.1f} MB | 🎧 {audio_format.upper()} | 🔊 {audio_quality}")
                             
+                            # Download button
                             st.download_button(
-                                "💝 Download Audio File",
-                                audio_bytes,
-                                f"{title}.{audio_format}",
-                                f"audio/{audio_format}",
-                                use_container_width=True
+                                label=f"💝 Click Here to Download - {title[:50]}.{audio_format} 💝",
+                                data=file_data,
+                                file_name=f"{title}.{audio_format}",
+                                mime=f"audio/{audio_format}",
+                                use_container_width=True,
+                                key="audio_download"
                             )
                             
-                            st.audio(audio_bytes, format=f"audio/{audio_format}")
+                            st.audio(file_data, format=f"audio/{audio_format}")
+                        else:
+                            st.error("No file found after download")
             except Exception as e:
                 st.error(f"Error: {str(e)}")
+                st.info("Make sure the URL is valid")
 
 with tab2:
     st.markdown("### 🎬 Download Video Files (MP4)")
@@ -278,37 +265,36 @@ with tab2:
             key="video_quality"
         )
     with col2:
-        st.info("📹 Format: MP4")
+        st.markdown("📹 **Format: MP4**")
     
     video_url = st.text_input(
         "Enter URL for Video",
-        placeholder="🔗 Paste YouTube or video URL here...",
+        placeholder="🔗 https://www.youtube.com/watch?v=...",
         key="video_url"
     )
     
     if st.button("🎬 Download Video (MP4) 🎬", use_container_width=True, key="video_btn"):
         if not video_url:
-            st.error("❌ Please enter a URL first! 🥺")
+            st.error("❌ Please enter a URL first!")
         else:
             try:
                 with tempfile.TemporaryDirectory() as temp_dir:
                     progress_bar = st.progress(0)
                     status_text = st.empty()
+                    status_text.text("Starting video download...")
                     
                     def progress_hook(d):
                         if d['status'] == 'downloading':
                             try:
-                                if 'total_bytes' in d and d['total_bytes']:
+                                if 'total_bytes' in d and d['total_bytes'] and d['total_bytes'] > 0:
                                     percent = d['downloaded_bytes'] / d['total_bytes']
                                     progress_bar.progress(min(percent, 1.0))
-                                    downloaded = d['downloaded_bytes'] / (1024*1024)
-                                    total = d['total_bytes'] / (1024*1024)
-                                    status_text.text(f"Downloading... {percent*100:.1f}% ({downloaded:.1f}/{total:.1f} MB)")
+                                    status_text.text(f"Downloading... {percent*100:.1f}%")
                             except:
                                 pass
                         elif d['status'] == 'finished':
                             progress_bar.progress(1.0)
-                            status_text.text("Processing video...")
+                            status_text.text("Processing video... Please wait")
                     
                     if video_quality == "Best Available":
                         format_str = 'bestvideo+bestaudio/best'
@@ -335,11 +321,8 @@ with tab2:
                         title = info.get('title', 'Unknown')
                         duration = info.get('duration', 0)
                         
-                        col1, col2 = st.columns(2)
-                        with col1:
-                            st.info(f"🎬 **Title:** {title[:80]}")
-                        with col2:
-                            st.info(f"⏱️ **Duration:** {timedelta(seconds=duration)}")
+                        st.info(f"🎬 **Title:** {title}")
+                        st.info(f"⏱️ **Duration:** {timedelta(seconds=duration)}")
                         
                         ydl.download([video_url])
                         
@@ -349,23 +332,31 @@ with tab2:
                             size_mb = os.path.getsize(file_path) / (1024*1024)
                             
                             with open(file_path, 'rb') as f:
-                                video_bytes = f.read()
+                                file_data = f.read()
                             
                             st.balloons()
-                            st.success(f"✅ Downloaded: {title}")
-                            st.info(f"📦 Size: {size_mb:.1f} MB | 🎬 Format: MP4 | 📹 Quality: {video_quality}")
+                            st.success(f"✅ Video Downloaded Successfully!")
+                            st.info(f"📦 Size: {size_mb:.1f} MB | 🎬 MP4 | 📹 {video_quality}")
                             
+                            # Download button with clear label
                             st.download_button(
-                                "💝 Download Video File (MP4)",
-                                video_bytes,
-                                f"{title}.mp4",
-                                "video/mp4",
-                                use_container_width=True
+                                label=f"💝 CLICK HERE TO DOWNLOAD - {title[:50]}.mp4 💝",
+                                data=file_data,
+                                file_name=f"{title}.mp4",
+                                mime="video/mp4",
+                                use_container_width=True,
+                                key="video_download"
                             )
                             
-                            st.video(video_bytes)
+                            if size_mb < 50:  # Only show preview for files under 50MB
+                                st.video(file_data)
+                            else:
+                                st.info("📹 Video preview not available for large files. Click download button above.")
+                        else:
+                            st.error("No video file found after download")
             except Exception as e:
                 st.error(f"Error: {str(e)}")
+                st.info("Make sure the URL is valid and FFmpeg is installed")
 
 # Sidebar
 with st.sidebar:
@@ -390,27 +381,28 @@ with st.sidebar:
         <ul>
             <li>MP4 - Universal</li>
             <li>Up to 1080p</li>
-            <li>Best quality</li>
         </ul>
     </div>
     """, unsafe_allow_html=True)
     
     st.markdown("""
     <div class="info-card">
-        <h4>📋 Requirements</h4>
-        <ul>
-            <li>🐍 Python 3.8+</li>
-            <li>🎬 FFmpeg</li>
-            <li>🌐 Internet</li>
-        </ul>
+        <h4>📋 How to Download</h4>
+        <ol>
+            <li>Paste URL</li>
+            <li>Click Download</li>
+            <li>Wait for processing</li>
+            <li>Click green download button</li>
+            <li>Check Downloads folder</li>
+        </ol>
     </div>
-    """)
+    """, unsafe_allow_html=True)
 
 # Footer
 st.markdown("---")
 st.markdown("""
 <div class="footer">
-    <p>Made with 💖 | Supports: MP3 | M4A | WAV | FLAC | OPUS | MP4</p>
+    <p>💖 Made with love | Audio: MP3 M4A WAV FLAC OPUS | Video: MP4</p>
     <p>🎵 🎀 🎵 🎀 🎵</p>
 </div>
 """, unsafe_allow_html=True)
