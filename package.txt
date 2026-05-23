@@ -1,1 +1,7 @@
-
+music_downloader_pro/
+│
+├── music_downloader_pro.py    (Main application)
+├── requirements.txt           (Python dependencies)
+├── run.txt                    (Installation & run instructions)
+├── setup.py                   (Optional: Package installer)
+└── README.md                  (Project documentation)
