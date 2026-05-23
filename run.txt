@@ -1,1 +1,21 @@
+Music Downloader Pro - How to Run
 
+Python Version Required: 3.8, 3.9, 3.10, 3.11, or 3.12
+
+Step 1: Install Python
+Go to https://www.python.org/downloads/
+Download Python 3.10 or 3.11
+During installation check "Add Python to PATH"
+Verify: python --version
+
+Step 2: Install FFmpeg
+Windows: winget install ffmpeg
+Mac: brew install ffmpeg
+Linux: sudo apt install ffmpeg
+Verify: ffmpeg -version
+
+Step 3: Install Requirements
+pip install -r requirements.txt
+
+Step 4: Run the App
+python music_downloader_pro.py
