@@ -1,7 +1,17 @@
-music_downloader_pro/
-│
-├── music_downloader_pro.py    (Main application)
-├── requirements.txt           (Python dependencies)
-├── run.txt                    (Installation & run instructions)
-├── setup.py                   (Optional: Package installer)
-└── README.md                  (Project documentation)
+Package: Music Downloader Pro
+Version: 1.0.0
+Python: 3.8, 3.9, 3.10, 3.11, 3.12
+Author: Your Name
+Description: Download music from YouTube and other platforms
+
+Dependencies:
+- yt-dlp (for downloading)
+- Pillow (for logo)
+- requests (for HTTP)
+- mutagen (for metadata)
+
+Files:
+- music_downloader_pro.py (main app)
+- requirements.txt (dependencies)
+- run.txt (instructions)
+- package.txt (this file)
