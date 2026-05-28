@@ -1,3 +1,6 @@
-# requirements.txt
-streamlit
-yt-dlp
+# run.txt
+1. Install Python 3.8+
+2. Install FFmpeg
+3. Run: pip install streamlit yt-dlp
+4. Run: streamlit run app.py
+5. Open http://localhost:8501
