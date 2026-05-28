@@ -1,20 +1,4 @@
-Professional Music & Video Downloader
-
-Requirements:
-- Python 3.8 or higher
-- FFmpeg installed on system
-
-Installation:
-pip install -r requirements.txt
-
-Run:
-streamlit run app.py
-
-Open browser at: http://localhost:8501
-
-Features:
-- Audio: MP3, M4A, WAV, FLAC, OPUS
-- Video: MP4 (up to 1080p)
-- Progress tracking
-- File size display
-- Audio/video preview
+1. Install Python 3.8+ from python.org
+2. Install FFmpeg from ffmpeg.org
+3. Run: pip install yt-dlp
+4. Run: python download.py
