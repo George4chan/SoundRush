@@ -1,55 +1,26 @@
-═══════════════════════════════════════════════════════════════
-🎵 PROFESSIONAL AUDIO DOWNLOADER - QUICK SETUP GUIDE
-═══════════════════════════════════════════════════════════════
+═══════════════════════════════════════════
+🎵 AUDIO DOWNLOADER - SETUP
+═══════════════════════════════════════════
 
-📋 REQUIREMENTS:
-═══════════════════════════════════════════════════════════════
-- Python 3.7+ (https://python.org)
-- FFmpeg (MANDATORY for audio conversion)
-- Internet connection
+1️⃣ INSTALL FFMPEG (REQUIRED!):
+   Windows: https://www.gyan.dev/ffmpeg/builds/
+   Mac: brew install ffmpeg  
+   Linux: sudo apt install ffmpeg
 
-⚡ 1-MINUTE SETUP:
-═══════════════════════════════════════════════════════════════
+2️⃣ INSTALL PYTION PACKAGE:
+   pip install yt-dlp
 
-1. INSTALL FFMPEG (CHOOSE YOUR OS):
-   Windows: https://www.gyan.dev/ffmpeg/builds/ → Add to PATH
-   Mac:     brew install ffmpeg
-   Linux:   sudo apt install ffmpeg
+3️⃣ RUN THE SCRIPT:
+   python audio_downloader.py
 
-2. INSTALL PYTHON PACKAGES:
-   pip install yt-dlp tqdm colorama
+📝 HOW TO USE:
+   - Select option 1
+   - Paste YouTube URL
+   - Choose format (1=MP3)
+   - Choose quality (3=256k best)
+   - Wait for download
 
-3. RUN THE DOWNLOADER:
-   python professional_audio_downloader.py
+✅ Files save to: Downloads folder
 
-🎮 HOW TO USE:
-═══════════════════════════════════════════════════════════════
-
-Menu Options:
-1. Download Single Audio → Paste YouTube URL
-2. Download Playlist    → Paste playlist URL
-3. Search & Download    → Type song name
-4. Batch Download       → Use text file with URLs
-5. Exit
-
-Recommended Settings:
-- Format: MP3 (most compatible)
-- Quality: 256k (best balance)
-- For audiophiles: FLAC (lossless)
-
-💡 QUICK TIPS:
-═══════════════════════════════════════════════════════════════
-✓ Files save to: ~/Music/Downloads/
-✓ Thumbnails auto-embedded in MP3/M4A
-✓ Playlists create auto-folders
-✓ Check logs: ~/Music/Downloads/.logs/
-
-❌ COMMON FIXES:
-═══════════════════════════════════════════════════════════════
-"ffmpeg not found" → Install FFmpeg (Step 1 above)
-"no module" → Run: pip install yt-dlp
-"download fails" → Try MP3 192k quality
-
-═══════════════════════════════════════════════════════════════
-⚠️ Only download content you own or have permission to download
-═══════════════════════════════════════════════════════════════
+❌ FFMPEG ERROR? Install FFmpeg from step 1
+═══════════════════════════════════════════
