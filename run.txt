@@ -1,4 +1,55 @@
-1. Install Python 3.8+ from python.org
-2. Install FFmpeg from ffmpeg.org
-3. Run: pip install yt-dlp
-4. Run: python taino.py
+═══════════════════════════════════════════════════════════════
+🎵 PROFESSIONAL AUDIO DOWNLOADER - QUICK SETUP GUIDE
+═══════════════════════════════════════════════════════════════
+
+📋 REQUIREMENTS:
+═══════════════════════════════════════════════════════════════
+- Python 3.7+ (https://python.org)
+- FFmpeg (MANDATORY for audio conversion)
+- Internet connection
+
+⚡ 1-MINUTE SETUP:
+═══════════════════════════════════════════════════════════════
+
+1. INSTALL FFMPEG (CHOOSE YOUR OS):
+   Windows: https://www.gyan.dev/ffmpeg/builds/ → Add to PATH
+   Mac:     brew install ffmpeg
+   Linux:   sudo apt install ffmpeg
+
+2. INSTALL PYTHON PACKAGES:
+   pip install yt-dlp tqdm colorama
+
+3. RUN THE DOWNLOADER:
+   python professional_audio_downloader.py
+
+🎮 HOW TO USE:
+═══════════════════════════════════════════════════════════════
+
+Menu Options:
+1. Download Single Audio → Paste YouTube URL
+2. Download Playlist    → Paste playlist URL
+3. Search & Download    → Type song name
+4. Batch Download       → Use text file with URLs
+5. Exit
+
+Recommended Settings:
+- Format: MP3 (most compatible)
+- Quality: 256k (best balance)
+- For audiophiles: FLAC (lossless)
+
+💡 QUICK TIPS:
+═══════════════════════════════════════════════════════════════
+✓ Files save to: ~/Music/Downloads/
+✓ Thumbnails auto-embedded in MP3/M4A
+✓ Playlists create auto-folders
+✓ Check logs: ~/Music/Downloads/.logs/
+
+❌ COMMON FIXES:
+═══════════════════════════════════════════════════════════════
+"ffmpeg not found" → Install FFmpeg (Step 1 above)
+"no module" → Run: pip install yt-dlp
+"download fails" → Try MP3 192k quality
+
+═══════════════════════════════════════════════════════════════
+⚠️ Only download content you own or have permission to download
+═══════════════════════════════════════════════════════════════
