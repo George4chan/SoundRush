@@ -1,4 +1,4 @@
 1. Install Python 3.8+ from python.org
 2. Install FFmpeg from ffmpeg.org
 3. Run: pip install yt-dlp
-4. Run: python download.py
+4. Run: python taino.py
