@@ -1,2 +1,3 @@
 # requirements.txt
 yt-dlp>=2024.12.13
+streamlit>=1.28.0
